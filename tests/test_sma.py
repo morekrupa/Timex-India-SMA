@@ -5,7 +5,11 @@ import pandas as pd
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from analysis import load_data, facebook_engagement, instagram_engagement  # noqa: E402
+from analysis import (  # noqa: E402
+    load_data,
+    facebook_engagement,
+    instagram_engagement,
+)
 
 
 def test_facebook_dataset():
@@ -67,4 +71,3 @@ def test_website_categories():
 
     assert "Category" in data.columns
     assert data["Category"].notna().sum() > 0
-    
