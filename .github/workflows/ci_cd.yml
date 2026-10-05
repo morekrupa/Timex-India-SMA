@@ -1,0 +1,93 @@
+name: Timex India SMA CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+
+  code-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Flake8
+        run: |
+          flake8 analysis.py tests
+
+  automated-testing:
+    needs: code-quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Pytest
+        run: |
+          pytest
+
+  dataset-verification:
+    needs: automated-testing
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Verify Timex Datasets
+        run: |
+          test -f data/fb_cleaned_data.csv
+          test -f data/twitter_cleaned_data.csv
+          test -f data/linkedin_cleaned_data.csv
+          test -f data/reddit_cleaned_data.csv
+          test -f data/website_cleaned_data.csv
+          test -f data/yt_cleaned_data.csv
+          test -f data/insta_cleaned_data.csv
+          test -f data/gm_cleaned_data.csv
+
+      - name: Dataset Verification
+        run: |
+          echo "All Timex India datasets verified successfully."
+
+  docker-build:
+    needs: automated-testing
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        run: |
+          docker build -t timex-india-sma:latest .
+
+      - name: Verify Docker Image
+        run: |
+          docker images timex-india-sma:latest
